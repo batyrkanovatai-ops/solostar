@@ -171,3 +171,14 @@ canvas {
     font-weight: bold;
     z-index: 10;
 }
+
+.author-credits {
+    color: #00e5ff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 15px;
+    margin-bottom: -5px;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
