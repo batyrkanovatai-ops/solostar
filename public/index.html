@@ -2,53 +2,49 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOLOSTAR — Multiplayer Brawler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solostar Mobile</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <!-- Главное меню -->
     <div id="menu" class="screen">
         <h1 class="logo">SOLOSTAR</h1>
-        <p class="subtitle">2D MULTIPLAYER ARENA</p>
-
+        <p class="subtitle">Выбери бойца и создай комнату</p>
+        
         <div class="card-container">
-            <h3>ВЫБЕРИ БОЙЦА</h3>
+            <h3>Выбери персонажа:</h3>
             <div id="brawlers-list" class="brawlers-grid"></div>
         </div>
 
         <div class="controls-panel">
-            <input type="text" id="nickname-input" placeholder="Введи никнейм" maxlength="12">
-            
             <div class="buttons-group">
-                <button id="btn-create" class="btn primary">СОЗДАТЬ КОМНАТУ</button>
+                <button id="btn-create" class="btn primary">Создать комнату</button>
                 <div class="join-box">
-                    <input type="text" id="room-input" placeholder="КОД КОМНАТЫ" maxlength="6">
-                    <button id="btn-join" class="btn secondary">ВОЙТИ</button>
+                    <input type="text" id="room-input" placeholder="Код комнаты" maxlength="5">
+                    <button id="btn-join" class="btn secondary">Войти</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Экран ожидания (Лобби) -->
     <div id="lobby" class="screen hidden">
-        <h2>КОМНАТА: <span id="lobby-code">------</span></h2>
-        <p>Отправь этот код другу для совместной игры</p>
-        
-        <div id="players-list" class="players-box"></div>
-        
-        <button id="btn-start" class="btn primary">НАЧАТЬ МАТЧ</button>
+        <h2>Комната: <span id="lobby-code">---</span></h2>
+        <div id="players-list"></div>
+        <button id="btn-start" class="btn primary">Начать игру</button>
     </div>
 
-    <!-- Игровой экран -->
     <div id="game-screen" class="screen hidden">
-        <div id="ui-bar">
-            <div class="ui-team">TEAM A: <span id="score-a">0</span></div>
-            <div class="ui-timer">MATCH IN PROGRESS</div>
-            <div class="ui-team">TEAM B: <span id="score-b">0</span></div>
-        </div>
         <canvas id="canvas"></canvas>
+        <!-- Мобильное управление -->
+        <div id="touch-controls">
+            <div id="joystick-zone">
+                <div id="joystick-base">
+                    <div id="joystick-stick"></div>
+                </div>
+            </div>
+            <button id="attack-btn">ATTACK</button>
+        </div>
     </div>
 
     <script src="game.js"></script>
