@@ -1,11 +1,12 @@
 const socket = io();
 
-// Состояние игры
-let selectedBrawler = (typeof BRAWLERS !== 'undefined' && BRAWLERS.SHELLY) ? BRAWLERS.SHELLY : null;
+// Дефолтные параметры, если персонажи не подгрузились
+const DEFAULT_SHELLY = { id: 'shelly', name: 'Shelly', hp: 100, damage: 20, speed: 5, color: '#e74c3c' };
+
+let selectedBrawler = (typeof BRAWLERS !== 'undefined' && BRAWLERS.SHELLY) ? BRAWLERS.SHELLY : DEFAULT_SHELLY;
 let currentRoom = null;
 let gameState = null;
 
-// Элементы UI
 const menuScreen = document.getElementById('menu');
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
@@ -16,12 +17,13 @@ const roomInput = document.getElementById('room-input');
 const roomIdDisplay = document.getElementById('room-id-display');
 const btnStartGame = document.getElementById('start-game-btn');
 
-// --- 1. Отрисовка списка бойцов ---
 function renderBrawlerCards() {
-    if (!brawlersList || typeof BRAWLERS === 'undefined') return;
+    if (!brawlersList) return;
     brawlersList.innerHTML = '';
 
-    Object.values(BRAWLERS).forEach(brawler => {
+    const list = (typeof BRAWLERS !== 'undefined') ? Object.values(BRAWLERS) : [DEFAULT_SHELLY];
+
+    list.forEach(brawler => {
         const card = document.createElement('div');
         const isActive = selectedBrawler && selectedBrawler.id === brawler.id;
         card.className = `brawler-card ${isActive ? 'active' : ''}`;
@@ -30,7 +32,6 @@ function renderBrawlerCards() {
             <h3 style="color: ${brawler.color || '#fff'}">${brawler.name}</h3>
             <p>❤️ HP: ${brawler.hp}</p>
             <p>⚔️ Урон: ${brawler.damage}</p>
-            <p>⚡ Скорость: ${brawler.speed}</p>
         `;
         card.onclick = () => {
             selectedBrawler = brawler;
@@ -40,19 +41,15 @@ function renderBrawlerCards() {
     });
 }
 
-// Запуск показа бойцов
 renderBrawlerCards();
 
-// --- 2. Сетевое взаимодействие (Socket.io) ---
 btnCreate.onclick = () => {
-    if (!selectedBrawler) return alert('Выберите бойца!');
     socket.emit('createRoom', { brawler: selectedBrawler });
 };
 
 btnJoin.onclick = () => {
     const code = roomInput.value.trim().toUpperCase();
     if (!code) return alert('Введите код комнаты!');
-    if (!selectedBrawler) return alert('Выберите бойца!');
     socket.emit('joinRoom', { roomId: code, brawler: selectedBrawler });
 };
 
@@ -64,21 +61,21 @@ if (btnStartGame) {
 
 socket.on('roomCreated', (data) => {
     currentRoom = data.roomId;
-    roomIdDisplay.innerText = currentRoom;
-    menuScreen.classList.add('hidden');
-    lobbyScreen.classList.remove('hidden');
+    if (roomIdDisplay) roomIdDisplay.innerText = currentRoom;
+    if (menuScreen) menuScreen.classList.add('hidden');
+    if (lobbyScreen) lobbyScreen.classList.remove('hidden');
 });
 
 socket.on('roomJoined', (data) => {
     currentRoom = data.roomId;
-    roomIdDisplay.innerText = currentRoom;
-    menuScreen.classList.add('hidden');
-    lobbyScreen.classList.remove('hidden');
+    if (roomIdDisplay) roomIdDisplay.innerText = currentRoom;
+    if (menuScreen) menuScreen.classList.add('hidden');
+    if (lobbyScreen) lobbyScreen.classList.remove('hidden');
 });
 
 socket.on('gameStarted', () => {
-    lobbyScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
+    if (lobbyScreen) lobbyScreen.classList.add('hidden');
+    if (gameScreen) gameScreen.classList.remove('hidden');
     initCanvas();
 });
 
@@ -86,7 +83,6 @@ socket.on('stateUpdate', (state) => {
     gameState = state;
 });
 
-// --- 3. Оптимизированное управление (Ходьба + Выстрел) ---
 const keys = {};
 
 window.addEventListener('keydown', (e) => {
@@ -110,7 +106,6 @@ function checkAndSendInput() {
     if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
     if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
 
-    // Нормализация вектора движения
     if (dx !== 0 && dy !== 0) {
         dx *= 0.7071;
         dy *= 0.7071;
@@ -126,7 +121,6 @@ function checkAndSendInput() {
     });
 }
 
-// Кнопка атаки для сенсорных экранов
 const attackBtn = document.getElementById('attack-btn');
 if (attackBtn) {
     attackBtn.addEventListener('touchstart', (e) => {
@@ -141,28 +135,22 @@ if (attackBtn) {
     });
 }
 
-// --- 4. Игровой цикл и оптимизированный Canvas ---
 let canvas, ctx;
 
 function initCanvas() {
     canvas = document.getElementById('game-canvas');
     if (!canvas) return;
     ctx = canvas.getContext('2d');
-    
-    // Адаптивный размер под экран
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     requestAnimationFrame(gameLoop);
 }
 
 function gameLoop() {
     if (gameState && ctx) {
-        // Очистка экрана
         ctx.fillStyle = '#1e1e28';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Используем внешний рендер, если он доступен
         if (typeof renderGame === 'function') {
             renderGame(ctx, gameState);
         }
