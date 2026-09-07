@@ -12,13 +12,13 @@ const ROOMS = {};
 const MAP_WIDTH = 1600;
 const MAP_HEIGHT = 1200;
 
-// Стены (препятствия)
+// Препятствия (стены)
 const OBSTACLES = [
-    { x: 300, y: 200, w: 200, h: 40 },
-    { x: 1100, y: 200, w: 200, h: 40 },
+    { x: 400, y: 300, w: 200, h: 40 },
+    { x: 1000, y: 300, w: 200, h: 40 },
     { x: 700, y: 500, w: 200, h: 200 },
-    { x: 300, y: 960, w: 200, h: 40 },
-    { x: 1100, y: 960, w: 200, h: 40 }
+    { x: 400, y: 860, w: 200, h: 40 },
+    { x: 1000, y: 860, w: 200, h: 40 }
 ];
 
 function generateRoomId() {
@@ -37,10 +37,11 @@ io.on('connection', (socket) => {
         socket.join(roomId);
         socket.roomId = roomId;
         
+        // Безопасный спавн (слева внизу)
         ROOMS[roomId].players[socket.id] = {
             id: socket.id,
-            x: 200 + Math.random() * 200,
-            y: 200 + Math.random() * 200,
+            x: 200,
+            y: 1000,
             angle: 0,
             hp: brawler.hp,
             maxHp: brawler.hp,
@@ -57,10 +58,11 @@ io.on('connection', (socket) => {
             socket.join(roomId);
             socket.roomId = roomId;
 
+            // Безопасный спавн (справа вверху)
             room.players[socket.id] = {
                 id: socket.id,
-                x: 1200 + Math.random() * 200,
-                y: 800 + Math.random() * 200,
+                x: 1400,
+                y: 200,
                 angle: 0,
                 hp: brawler.hp,
                 maxHp: brawler.hp,
@@ -88,11 +90,9 @@ io.on('connection', (socket) => {
         let nextX = p.x + dx * p.brawler.speed;
         let nextY = p.y + dy * p.brawler.speed;
 
-        // Ограничения карты
         nextX = Math.max(30, Math.min(MAP_WIDTH - 30, nextX));
         nextY = Math.max(30, Math.min(MAP_HEIGHT - 30, nextY));
 
-        // Коллизия со стенами
         let canMove = true;
         OBSTACLES.forEach(obs => {
             if (nextX + 20 > obs.x && nextX - 20 < obs.x + obs.w &&
@@ -136,19 +136,16 @@ io.on('connection', (socket) => {
     });
 });
 
-// Игровой цикл сервера (60 FPS)
 setInterval(() => {
     Object.values(ROOMS).forEach(room => {
         if (!room.started) return;
 
-        // Движение пуль
         for (let i = room.bullets.length - 1; i >= 0; i--) {
             const b = room.bullets[i];
             b.x += b.vx;
             b.y += b.vy;
             b.life--;
 
-            // Столкновение со стенами
             let hitWall = false;
             OBSTACLES.forEach(obs => {
                 if (b.x > obs.x && b.x < obs.x + obs.w && b.y > obs.y && b.y < obs.y + obs.h) {
@@ -161,7 +158,6 @@ setInterval(() => {
                 continue;
             }
 
-            // Попадание в игроков
             Object.values(room.players).forEach(p => {
                 if (p.id !== b.ownerId) {
                     const dist = Math.hypot(p.x - b.x, p.y - b.y);
@@ -169,8 +165,8 @@ setInterval(() => {
                         p.hp -= b.damage;
                         if (p.hp <= 0) {
                             p.hp = p.maxHp;
-                            p.x = 200 + Math.random() * 1200;
-                            p.y = 200 + Math.random() * 800;
+                            p.x = 200;
+                            p.y = 1000;
                         }
                         room.bullets.splice(i, 1);
                     }
