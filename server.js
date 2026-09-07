@@ -19,18 +19,45 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---------- Данные бойцов ----------
+// ---------- Данные бойцов и карты ----------
 const BRAWLERS = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'public/brawlers/stats.json'), 'utf8')
+);
+const MAP = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'public/map.json'), 'utf8')
 );
 
 // ---------- Настройки матча ----------
 const PLAYERS_PER_MATCH = 6;
 const TICK_RATE = 30;          // раз в секунду сервер шлёт состояние
 const TICK_MS = 1000 / TICK_RATE;
+const MAP_SIZE = MAP.mapSize;
+const BUSH_REVEAL_RADIUS = MAP.bushRevealRadius;
 
-// Временные границы карты (реальная карта со стенами/кустами — следующий шаг)
-const MAP_SIZE = 2400;
+// ---------- Геометрия: стены и кусты ----------
+function circleHitsRect(cx, cy, r, rect) {
+  const nearestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+  const nearestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+  const dx = cx - nearestX, dy = cy - nearestY;
+  return dx * dx + dy * dy < r * r;
+}
+function pointInRect(x, y, rect) {
+  return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
+}
+function hitsAnyWall(x, y, r) {
+  return MAP.walls.some(w => circleHitsRect(x, y, r, w));
+}
+function isInBush(x, y) {
+  return MAP.bushes.some(b => pointInRect(x, y, b));
+}
+// Игрок виден наблюдателю, если сам не в кустах, недавно стрелял,
+// это он сам, или наблюдатель подошёл достаточно близко.
+function isVisibleTo(viewer, target) {
+  if (viewer.id === target.id) return true;
+  if (!target.inBush) return true;
+  if (target.revealTimer > 0) return true;
+  return Math.hypot(viewer.x - target.x, viewer.y - target.y) < BUSH_REVEAL_RADIUS;
+}
 
 // ---------- Хранилища в памяти ----------
 const queue = [];               // очередь автоподбора: [socket.id, ...]
@@ -78,6 +105,8 @@ function startMatch(room) {
     p.maxHp = p.hp;
     p.cooldown = 0;
     p.alive = true;
+    p.inBush = false;
+    p.revealTimer = 0;
     p.input = { dx: 0, dy: 0, aim: 0, shooting: false };
   }
 
@@ -96,7 +125,8 @@ function publicPlayer(p) {
     brawlerId: p.brawlerId,
     x: p.x, y: p.y, rot: p.rot,
     hp: p.hp, maxHp: p.maxHp,
-    alive: p.alive
+    alive: p.alive,
+    inBush: !!p.inBush
   };
 }
 
@@ -108,20 +138,29 @@ function tickRoom(room) {
     const stats = BRAWLERS[p.brawlerId];
     const { dx, dy, aim, shooting } = p.input;
 
-    // движение (сервер авторитетно считает позицию)
+    // движение (сервер авторитетно считает позицию, со скольжением вдоль стен)
     const len = Math.hypot(dx, dy) || 1;
     if (dx || dy) {
-      p.x += (dx / len) * stats.speed * dt;
-      p.y += (dy / len) * stats.speed * dt;
-      p.x = Math.max(stats.size, Math.min(MAP_SIZE - stats.size, p.x));
-      p.y = Math.max(stats.size, Math.min(MAP_SIZE - stats.size, p.y));
+      const targetX = Math.max(stats.size, Math.min(MAP_SIZE - stats.size, p.x + (dx / len) * stats.speed * dt));
+      const targetY = Math.max(stats.size, Math.min(MAP_SIZE - stats.size, p.y + (dy / len) * stats.speed * dt));
+
+      if (!hitsAnyWall(targetX, targetY, stats.size)) {
+        p.x = targetX; p.y = targetY;
+      } else if (!hitsAnyWall(targetX, p.y, stats.size)) {
+        p.x = targetX; // скользим по X, если по Y упёрлись в стену
+      } else if (!hitsAnyWall(p.x, targetY, stats.size)) {
+        p.y = targetY; // скользим по Y
+      }
     }
     p.rot = aim;
+    p.inBush = isInBush(p.x, p.y);
+    p.revealTimer = Math.max(0, p.revealTimer - dt);
 
     // стрельба / КД
     p.cooldown = Math.max(0, p.cooldown - dt);
     if (shooting && p.cooldown <= 0) {
       p.cooldown = stats.cooldown;
+      p.revealTimer = 1.0; // выстрел на секунду выдаёт позицию, даже из куста
       room.projectiles.push({
         ownerId: p.id,
         x: p.x, y: p.y,
@@ -146,6 +185,7 @@ function tickRoom(room) {
     pr.y += pr.vy * dt;
     pr.traveled += Math.hypot(pr.vx, pr.vy) * dt;
     if (pr.traveled > pr.range) return false;
+    if (hitsAnyWall(pr.x, pr.y, 4)) return false; // снаряд гаснет о стену
 
     for (const p of room.players.values()) {
       if (!p.alive || p.id === pr.ownerId) continue;
@@ -168,10 +208,13 @@ function tickRoom(room) {
     return true;
   });
 
-  io.to(room.id).emit('state', {
-    players: [...room.players.values()].map(publicPlayer),
-    projectiles: room.projectiles.map(pr => ({ x: pr.x, y: pr.y, effect: pr.effect }))
-  });
+  const allPlayers = [...room.players.values()];
+  const projSnapshot = room.projectiles.map(pr => ({ x: pr.x, y: pr.y, effect: pr.effect }));
+
+  for (const viewer of allPlayers) {
+    const visible = allPlayers.filter(p => isVisibleTo(viewer, p)).map(publicPlayer);
+    io.to(viewer.id).emit('state', { players: visible, projectiles: projSnapshot });
+  }
 
   checkMatchEnd(room);
 }
