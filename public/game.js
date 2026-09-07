@@ -24,8 +24,59 @@ let projectiles = [];
 let brawlersData = {};
 let matchActive = false;
 
-// подгружаем характеристики бойцов (для цвета/размера в рендере)
-fetch('brawlers/stats.json').then(r => r.json()).then(data => { brawlersData = data; });
+// подгружаем характеристики бойцов (для цвета/размера в рендере + для меню выбора)
+let selectedBrawlerId = 'atai';
+fetch('brawlers/stats.json').then(r => r.json()).then(data => {
+  brawlersData = data;
+  buildBrawlerGrid();
+});
+
+const RARITY_LABEL = {
+  legendary: 'Легендарный', mythic: 'Мифический', epic: 'Эпический',
+  superRare: 'Сверхредкий', rare: 'Редкий'
+};
+
+function buildBrawlerGrid() {
+  const grid = document.getElementById('brawlerGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (const [id, b] of Object.entries(brawlersData)) {
+    const card = document.createElement('div');
+    card.className = 'brawler-card' + (id === selectedBrawlerId ? ' selected' : '');
+    card.style.setProperty('--brawler-color', b.color);
+    card.innerHTML = `
+      <div class="brawler-icon"></div>
+      <div class="brawler-name">${b.name}</div>
+      <div class="brawler-rarity">${RARITY_LABEL[b.rarity] || b.rarity}</div>
+    `;
+    card.addEventListener('click', () => {
+      selectedBrawlerId = id;
+      document.querySelectorAll('.brawler-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+    grid.appendChild(card);
+  }
+}
+
+function getPlayerName() {
+  const el = document.getElementById('nameInput');
+  const val = el ? el.value.trim() : '';
+  return val || 'Игрок';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('quickplayBtn')?.addEventListener('click', () => {
+    window.Solostar.quickplay(getPlayerName(), selectedBrawlerId);
+  });
+  document.getElementById('createRoomBtn')?.addEventListener('click', () => {
+    window.Solostar.createRoom(getPlayerName(), selectedBrawlerId);
+  });
+  document.getElementById('joinRoomBtn')?.addEventListener('click', () => {
+    const code = document.getElementById('roomCodeInput')?.value.trim();
+    if (!code) { setStatus('Введи код комнаты'); return; }
+    window.Solostar.joinRoom(code, getPlayerName(), selectedBrawlerId);
+  });
+});
 
 // ---------------- Джойстики (левый — движение, правый — прицел/стрельба) ----------------
 function makeStick(side) {
