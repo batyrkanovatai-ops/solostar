@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLOSTAR — Multiplayer Brawler</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <!-- Главное меню -->
+    <div id="menu" class="screen">
+        <h1 class="logo">SOLOSTAR</h1>
+        <p class="subtitle">2D MULTIPLAYER ARENA</p>
+
+        <div class="card-container">
+            <h3>ВЫБЕРИ БОЙЦА</h3>
+            <div id="brawlers-list" class="brawlers-grid"></div>
+        </div>
+
+        <div class="controls-panel">
+            <input type="text" id="nickname-input" placeholder="Введи никнейм" maxlength="12">
+            
+            <div class="buttons-group">
+                <button id="btn-create" class="btn primary">СОЗДАТЬ КОМНАТУ</button>
+                <div class="join-box">
+                    <input type="text" id="room-input" placeholder="КОД КОМНАТЫ" maxlength="6">
+                    <button id="btn-join" class="btn secondary">ВОЙТИ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран ожидания (Лобби) -->
+    <div id="lobby" class="screen hidden">
+        <h2>КОМНАТА: <span id="lobby-code">------</span></h2>
+        <p>Отправь этот код другу для совместной игры</p>
+        
+        <div id="players-list" class="players-box"></div>
+        
+        <button id="btn-start" class="btn primary">НАЧАТЬ МАТЧ</button>
+    </div>
+
+    <!-- Игровой экран -->
+    <div id="game-screen" class="screen hidden">
+        <div id="ui-bar">
+            <div class="ui-team">TEAM A: <span id="score-a">0</span></div>
+            <div class="ui-timer">MATCH IN PROGRESS</div>
+            <div class="ui-team">TEAM B: <span id="score-b">0</span></div>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
