@@ -73,6 +73,7 @@ function createRoom(isPrivate) {
   const room = {
     id,
     isPrivate,
+    hostId: null,
     players: new Map(), // socket.id -> playerState
     projectiles: [],
     started: false,
@@ -258,6 +259,7 @@ io.on('connection', (socket) => {
     socket.data.name = name || 'Игрок';
     socket.data.brawlerId = BRAWLERS[brawlerId] ? brawlerId : 'atai';
     const room = createRoom(true);
+    room.hostId = socket.id;
     joinRoomInternal(socket, room);
     socket.emit('roomCreated', { code: room.id });
   });
@@ -271,6 +273,20 @@ io.on('connection', (socket) => {
     socket.data.name = name || 'Игрок';
     socket.data.brawlerId = BRAWLERS[brawlerId] ? brawlerId : 'atai';
     joinRoomInternal(socket, room);
+  });
+
+  socket.on('startRoom', () => {
+    const room = rooms.get(socket.data.roomId);
+    if (!room || room.started) return;
+    if (room.hostId !== socket.id) {
+      socket.emit('error', { message: 'Только создатель комнаты может начать матч' });
+      return;
+    }
+    if (room.players.size < 2) {
+      socket.emit('error', { message: 'Нужно минимум 2 игрока' });
+      return;
+    }
+    startMatch(room);
   });
 
   socket.on('input', (input) => {
@@ -288,6 +304,19 @@ io.on('connection', (socket) => {
   });
 });
 
+function broadcastRoomUpdate(room) {
+  const list = [...room.players.values()].map(p => ({ name: p.name, brawlerId: p.brawlerId }));
+  for (const id of room.players.keys()) {
+    io.to(id).emit('roomUpdate', {
+      code: room.id,
+      players: list,
+      need: PLAYERS_PER_MATCH,
+      isHost: room.hostId === id,
+      canStart: room.isPrivate && room.players.size >= 2
+    });
+  }
+}
+
 function joinRoomInternal(socket, room) {
   socket.join(room.id);
   socket.data.roomId = room.id;
@@ -296,11 +325,7 @@ function joinRoomInternal(socket, room) {
     name: socket.data.name,
     brawlerId: socket.data.brawlerId
   });
-  io.to(room.id).emit('roomUpdate', {
-    code: room.id,
-    players: [...room.players.values()].map(p => ({ name: p.name, brawlerId: p.brawlerId })),
-    need: PLAYERS_PER_MATCH
-  });
+  broadcastRoomUpdate(room);
 
   if (room.players.size >= PLAYERS_PER_MATCH && !room.started) {
     startMatch(room);
@@ -323,15 +348,14 @@ function leaveCurrentRoom(socket) {
   if (!room) return;
   room.players.delete(socket.id);
   socket.leave(room.id);
+  if (room.hostId === socket.id) {
+    room.hostId = room.players.keys().next().value || null;
+  }
   if (room.players.size === 0) {
     if (room.loop) clearInterval(room.loop);
     rooms.delete(room.id);
   } else {
-    io.to(room.id).emit('roomUpdate', {
-      code: room.id,
-      players: [...room.players.values()].map(p => ({ name: p.name, brawlerId: p.brawlerId })),
-      need: PLAYERS_PER_MATCH
-    });
+    broadcastRoomUpdate(room);
   }
 }
 
