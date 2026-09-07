@@ -1,55 +1,44 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solostar Mobile</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Solostar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="menu" class="screen">
-        <div class="author-credits">art by Atai from 117 school Bishkek</div>
-        <h1 class="logo">SOLOSTAR</h1>
-        <p class="subtitle">Выбери бойца и создай комнату</p>
 
-        <div class="card-container">
-            <h3>Выбери персонажа:</h3>
-            <div id="brawlers-list" class="brawlers-grid"></div>
-        </div>
+<canvas id="gameCanvas"></canvas>
 
-        <div class="controls-panel">
-            <div class="buttons-group">
-                <button id="btn-create" class="btn primary">Создать комнату</button>
-                <div class="join-box">
-                    <input type="text" id="room-input" placeholder="Код комнаты" maxlength="6">
-                    <button id="btn-join" class="btn secondary">Войти</button>
-                </div>
-            </div>
-        </div>
+<div id="menuScreen">
+  <div class="menu-inner">
+
+    <div class="brand">
+      <span class="brand-credit">art by Atai · 177 school, Bishkek</span>
+      <h1 class="brand-title">SOLOSTAR</h1>
     </div>
 
-    <div id="lobby-screen" class="screen hidden">
-        <h2>Комната: <span id="room-id-display">------</span></h2>
-        <div id="players-list" class="card-container"></div>
-        <button id="start-game-btn" class="btn primary">Начать игру</button>
+    <input id="nameInput" class="name-input" type="text" placeholder="Твой ник" maxlength="12">
+
+    <div id="brawlerGrid" class="brawler-grid"></div>
+
+    <div id="statusText" class="status-text"></div>
+
+    <div class="actions">
+      <button id="quickplayBtn" class="btn btn-primary">Быстрый бой</button>
+      <div class="room-row">
+        <button id="createRoomBtn" class="btn btn-secondary">Создать комнату</button>
+        <input id="roomCodeInput" class="code-input" type="text" placeholder="КОД" maxlength="5">
+        <button id="joinRoomBtn" class="btn btn-secondary">Войти</button>
+      </div>
     </div>
 
-    <div id="game-screen" class="hidden">
-        <canvas id="game-canvas"></canvas>
-        <div id="touch-controls">
-            <div id="joystick-zone">
-                <div id="joystick-base">
-                    <div id="joystick-stick"></div>
-                </div>
-            </div>
-            <button id="attack-btn">ATTACK</button>
-        </div>
-    </div>
+  </div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/brawlers/characters.js"></script>
-    <script src="/controls/joystick.js"></script>
-    <script src="/graphics/renderer.js"></script>
-    <script src="/game.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
