@@ -1,0 +1,150 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #0f1015;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.logo {
+    font-size: 3.5rem;
+    letter-spacing: 4px;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 25px;
+}
+
+.card-container {
+    background: #181a20;
+    border: 1px solid #2a2e39;
+    padding: 20px;
+    border-radius: 12px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.brawlers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.brawler-card {
+    background: #222630;
+    border: 2px solid transparent;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.brawler-card:hover, .brawler-card.active {
+    border-color: #ffd700;
+    background: #2d3240;
+}
+
+.controls-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 400px;
+}
+
+input {
+    background: #181a20;
+    border: 1px solid #2a2e39;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    text-align: center;
+}
+
+input:focus {
+    border-color: #ffd700;
+}
+
+.buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.join-box {
+    display: flex;
+    gap: 8px;
+}
+
+.join-box input {
+    flex: 1;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn.primary {
+    background: #ffd700;
+    color: #000;
+}
+
+.btn.primary:hover {
+    background: #e6c200;
+}
+
+.btn.secondary {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.btn.secondary:hover {
+    background: #2563eb;
+}
+
+canvas {
+    background: #15171e;
+    border: 2px solid #2a2e39;
+    border-radius: 8px;
+}
+
+#ui-bar {
+    display: flex;
+    justify-content: space-between;
+    width: 800px;
+    padding: 10px 0;
+    font-weight: bold;
+}
