@@ -22,7 +22,10 @@ let players = [];       // последнее полученное состоя�
 let renderPlayers = [];  // сглаженные позиции для отрисовки (интерполяция)
 let projectiles = [];
 let brawlersData = {};
+let mapData = { walls: [], bushes: [] };
 let matchActive = false;
+
+fetch('map.json').then(r => r.json()).then(data => { mapData = data; });
 
 // подгружаем характеристики бойцов (для цвета/размера в рендере + для меню выбора)
 let selectedBrawlerId = 'atai';
@@ -257,6 +260,8 @@ function draw() {
   ctx.strokeRect(0, 0, mapSize, mapSize);
   ctx.lineWidth = 1;
 
+  drawObstacles();
+
   // снаряды
   for (const pr of projectiles) {
     ctx.beginPath();
@@ -273,12 +278,14 @@ function draw() {
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rot || 0);
+    ctx.globalAlpha = p.inBush ? 0.55 : 1; // прячется в кустах
     ctx.fillStyle = stats.color;
     ctx.beginPath();
     ctx.arc(0, 0, stats.size, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(stats.size - 4, -3, 14, 6); // "дуло" — направление прицела
+    ctx.globalAlpha = 1;
     ctx.restore();
 
     // HP-бар
@@ -298,6 +305,28 @@ function draw() {
 
   drawSticks();
   requestAnimationFrame(loop);
+}
+
+function drawObstacles() {
+  // кусты — под всем, полупрозрачная зелень
+  ctx.fillStyle = 'rgba(76, 175, 80, 0.35)';
+  ctx.strokeStyle = 'rgba(76, 175, 80, 0.7)';
+  ctx.setLineDash([6, 4]);
+  for (const b of mapData.bushes || []) {
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.strokeRect(b.x, b.y, b.w, b.h);
+  }
+  ctx.setLineDash([]);
+
+  // стены — твёрдые, с тенью снизу для объёма
+  for (const w of mapData.walls || []) {
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(w.x, w.y + 6, w.w, w.h);
+    ctx.fillStyle = '#5d4037';
+    ctx.fillRect(w.x, w.y, w.w, w.h);
+    ctx.strokeStyle = '#3e2723';
+    ctx.strokeRect(w.x, w.y, w.w, w.h);
+  }
 }
 
 function effectColor(effect) {
