@@ -2,7 +2,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
 }
 
 body {
@@ -21,130 +24,119 @@ body {
     align-items: center;
     width: 100%;
     max-width: 800px;
+    padding: 10px;
 }
 
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
 .logo {
-    font-size: 3.5rem;
-    letter-spacing: 4px;
+    font-size: 2.5rem;
     color: #ffd700;
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-}
-
-.subtitle {
-    color: #888;
-    margin-bottom: 25px;
 }
 
 .card-container {
     background: #181a20;
-    border: 1px solid #2a2e39;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
     width: 100%;
-    text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .brawlers-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 15px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .brawler-card {
     background: #222630;
-    border: 2px solid transparent;
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
-    cursor: pointer;
-    transition: 0.2s;
+    border: 2px solid transparent;
 }
 
-.brawler-card:hover, .brawler-card.active {
-    border-color: #ffd700;
-    background: #2d3240;
-}
+.brawler-card.active { border-color: #ffd700; }
 
-.controls-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 400px;
-}
+.controls-panel { width: 100%; max-width: 350px; }
+.buttons-group { display: flex; flex-direction: column; gap: 8px; }
+.join-box { display: flex; gap: 8px; }
 
 input {
     background: #181a20;
     border: 1px solid #2a2e39;
-    padding: 12px 16px;
+    padding: 10px;
     border-radius: 8px;
     color: #fff;
-    font-size: 1rem;
-    outline: none;
     text-align: center;
-}
-
-input:focus {
-    border-color: #ffd700;
-}
-
-.buttons-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.join-box {
-    display: flex;
-    gap: 8px;
-}
-
-.join-box input {
-    flex: 1;
+    width: 100%;
 }
 
 .btn {
-    padding: 12px 20px;
+    padding: 12px;
     border: none;
     border-radius: 8px;
     font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
 }
-
-.btn.primary {
-    background: #ffd700;
-    color: #000;
-}
-
-.btn.primary:hover {
-    background: #e6c200;
-}
-
-.btn.secondary {
-    background: #3b82f6;
-    color: #fff;
-}
-
-.btn.secondary:hover {
-    background: #2563eb;
-}
+.btn.primary { background: #ffd700; color: #000; }
+.btn.secondary { background: #3b82f6; color: #fff; }
 
 canvas {
     background: #15171e;
     border: 2px solid #2a2e39;
-    border-radius: 8px;
+    width: 100vw;
+    height: 60vh;
+    max-width: 800px;
 }
 
-#ui-bar {
+/* Элементы управления Touch */
+#touch-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    height: 150px;
     display: flex;
     justify-content: space-between;
-    width: 800px;
-    padding: 10px 0;
+    padding: 0 30px;
+    pointer-events: none;
+}
+
+#joystick-zone {
+    width: 120px;
+    height: 120px;
+    pointer-events: auto;
+}
+
+#joystick-base {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#joystick-stick {
+    width: 50px;
+    height: 50px;
+    background: #ffd700;
+    border-radius: 50%;
+    position: absolute;
+}
+
+#attack-btn {
+    width: 90px;
+    height: 90px;
+    background: #e53935;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
     font-weight: bold;
+    font-size: 1.1rem;
+    pointer-events: auto;
+    box-shadow: 0 0 10px rgba(229, 57, 53, 0.5);
 }
