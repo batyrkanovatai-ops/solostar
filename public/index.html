@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Solostar Mobile</title>
     <link rel="stylesheet" href="style.css">
-    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div id="menu" class="screen">.
-    <div class="author-credits">art by Atai from 117 school Bishkek</div>
+    <!-- Меню -->
+    <div id="menu" class="screen">
+        <div class="author-credits">art by Atai from 117 school Bishkek</div>
         <h1 class="logo">SOLOSTAR</h1>
         <p class="subtitle">Выбери бойца и создай комнату</p>
-        
+
         <div class="card-container">
             <h3>Выбери персонажа:</h3>
             <div id="brawlers-list" class="brawlers-grid"></div>
@@ -29,15 +29,16 @@
         </div>
     </div>
 
-    <div id="lobby" class="screen hidden">
-        <h2>Комната: <span id="lobby-code">---</span></h2>
-        <div id="players-list"></div>
-        <button id="btn-start" class="btn primary">Начать игру</button>
+    <!-- Лобби -->
+    <div id="lobby-screen" class="screen hidden">
+        <h2>Комната: <span id="room-id-display">------</span></h2>
+        <div id="players-list" class="card-container"></div>
+        <button id="start-game-btn" class="btn primary">Начать игру</button>
     </div>
 
-    <div id="game-screen" class="screen hidden">
-        <canvas id="canvas"></canvas>
-        <!-- Мобильное управление -->
+    <!-- Игровой экран -->
+    <div id="game-screen" class="hidden">
+        <canvas id="game-canvas"></canvas>
         <div id="touch-controls">
             <div id="joystick-zone">
                 <div id="joystick-base">
@@ -48,6 +49,11 @@
         </div>
     </div>
 
+    <!-- Скрипты -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="brawlers/characters.js"></script>
+    <script src="controls/joystick.js"></script>
+    <script src="graphics/renderer.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
