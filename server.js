@@ -260,8 +260,8 @@ io.on('connection', (socket) => {
     socket.data.brawlerId = BRAWLERS[brawlerId] ? brawlerId : 'atai';
     const room = createRoom(true);
     room.hostId = socket.id;
-    joinRoomInternal(socket, room);
     socket.emit('roomCreated', { code: room.id });
+    joinRoomInternal(socket, room);
   });
 
   socket.on('joinRoom', ({ code, name, brawlerId }) => {
