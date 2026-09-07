@@ -79,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!code) { setStatus('Введи код комнаты'); return; }
     window.Solostar.joinRoom(code, getPlayerName(), selectedBrawlerId);
   });
+  document.getElementById('startRoomBtn')?.addEventListener('click', () => {
+    socket.emit('startRoom');
+  });
 });
 
 // ---------------- Джойстики (левый — движение, правый — прицел/стрельба) ----------------
@@ -169,8 +172,10 @@ socket.on('connect', () => { myId = socket.id; });
 
 socket.on('queued', () => setStatus('Ищем соперников...'));
 socket.on('roomCreated', ({ code }) => setStatus(`Комната создана: ${code}`));
-socket.on('roomUpdate', ({ code, players: list, need }) => {
+socket.on('roomUpdate', ({ code, players: list, need, isHost, canStart }) => {
   setStatus(`Комната ${code}: ${list.length}/${need} игроков`);
+  const btn = document.getElementById('startRoomBtn');
+  if (btn) btn.style.display = (isHost && canStart) ? 'block' : 'none';
 });
 socket.on('error', ({ message }) => setStatus(message));
 
