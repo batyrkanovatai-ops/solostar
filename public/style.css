@@ -148,3 +148,26 @@ canvas {
     pointer-events: auto;
     box-shadow: 0 0 10px rgba(229, 57, 53, 0.5);
 }
+.trophy-container {
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 10px auto;
+    width: fit-content;
+}
+
+#ingame-trophy {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    z-index: 10;
+}
