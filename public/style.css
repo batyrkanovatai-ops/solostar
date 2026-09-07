@@ -81,15 +81,23 @@ input {
 .btn.primary { background: #ffd700; color: #000; }
 .btn.secondary { background: #3b82f6; color: #fff; }
 
-canvas {
-    background: #15171e;
-    border: 2px solid #2a2e39;
+#game-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
-    height: 60vh;
-    max-width: 800px;
+    height: 100vh;
+    padding: 0;
+    max-width: none;
 }
 
-/* Элементы управления Touch */
+canvas {
+    background: #15171e;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
 #touch-controls {
     position: fixed;
     bottom: 20px;
