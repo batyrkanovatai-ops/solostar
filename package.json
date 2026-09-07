@@ -1,7 +1,7 @@
 {
-  "name": "solostar",
+  "name": "solostar-mobile",
   "version": "1.0.0",
-  "description": "2D Multiplayer Game Solostar",
+  "description": "Solostar Game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
