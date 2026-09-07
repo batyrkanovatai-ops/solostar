@@ -1,184 +1,45 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: sans-serif;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-}
-
-body {
-    background: #0f1015;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-}
-
-.screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 800px;
-    padding: 10px;
-}
-
-.hidden { display: none !important; }
-
-.logo {
-    font-size: 2.5rem;
-    color: #ffd700;
-}
-
-.card-container {
-    background: #181a20;
-    padding: 15px;
-    border-radius: 12px;
-    width: 100%;
-    margin-bottom: 15px;
+.author-credits {
+    color: #00e5ff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+    text-align: center;
 }
 
 .brawlers-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 5px;
 }
 
 .brawler-card {
-    background: #222630;
-    padding: 10px;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.07);
     border: 2px solid transparent;
-}
-
-.brawler-card.active { border-color: #ffd700; }
-
-.controls-panel { width: 100%; max-width: 350px; }
-.buttons-group { display: flex; flex-direction: column; gap: 8px; }
-.join-box { display: flex; gap: 8px; }
-
-input {
-    background: #181a20;
-    border: 1px solid #2a2e39;
-    padding: 10px;
-    border-radius: 8px;
-    color: #fff;
-    text-align: center;
-    width: 100%;
-}
-
-.btn {
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-}
-.btn.primary { background: #ffd700; color: #000; }
-.btn.secondary { background: #3b82f6; color: #fff; }
-
-#game-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    padding: 0;
-    max-width: none;
-}
-
-canvas {
-    background: #15171e;
-    width: 100vw;
-    height: 100vh;
-    display: block;
-}
-
-#touch-controls {
-    position: fixed;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
-    height: 150px;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 30px;
-    pointer-events: none;
-}
-
-#joystick-zone {
-    width: 120px;
-    height: 120px;
-    pointer-events: auto;
-}
-
-#joystick-base {
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#joystick-stick {
-    width: 50px;
-    height: 50px;
-    background: #ffd700;
-    border-radius: 50%;
-    position: absolute;
-}
-
-#attack-btn {
-    width: 90px;
-    height: 90px;
-    background: #e53935;
-    border: none;
-    border-radius: 50%;
-    color: #fff;
-    font-weight: bold;
-    font-size: 1.1rem;
-    pointer-events: auto;
-    box-shadow: 0 0 10px rgba(229, 57, 53, 0.5);
-}
-.trophy-container {
-    background: rgba(255, 215, 0, 0.2);
-    border: 2px solid #ffd700;
-    color: #ffd700;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin: 10px auto;
-    width: fit-content;
-}
-
-#ingame-trophy {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    padding: 6px 12px;
     border-radius: 12px;
-    font-weight: bold;
-    z-index: 10;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
 }
 
-.author-credits {
-    color: #00e5ff;
-    font-size: 0.9rem;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 15px;
-    margin-bottom: -5px;
-    text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+.brawler-card:hover, .brawler-card.active {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.brawler-card.active {
+    border-color: #00e5ff !important;
+}
+
+.hidden {
+    display: none !important;
 }
