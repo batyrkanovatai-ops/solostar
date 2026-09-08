@@ -34,6 +34,32 @@ const TICK_MS = 1000 / TICK_RATE;
 const MAP_SIZE = MAP.mapSize;
 const BUSH_REVEAL_RADIUS = MAP.bushRevealRadius;
 
+// ---------- Сужающаяся зона (королевская битва) ----------
+const ZONE_CENTER = { x: MAP_SIZE / 2, y: MAP_SIZE / 2 };
+const ZONE_DPS = 120; // урон в секунду тем, кто вне зоны
+// Ключевые точки: {t: секунда матча, r: радиус}. Между точками — плавная линейная интерполяция.
+const ZONE_KEYFRAMES = [
+  { t: 0,   r: 1100 },
+  { t: 15,  r: 1100 }, // держим полную карту первые 15 сек
+  { t: 35,  r: 700 },  // первое сужение
+  { t: 45,  r: 700 },  // пауза
+  { t: 65,  r: 400 },  // второе сужение
+  { t: 75,  r: 400 },  // пауза
+  { t: 95,  r: 180 },  // финальный маленький круг
+  { t: 999999, r: 180 }
+];
+function getZoneRadius(elapsed) {
+  for (let i = 0; i < ZONE_KEYFRAMES.length - 1; i++) {
+    const a = ZONE_KEYFRAMES[i], b = ZONE_KEYFRAMES[i + 1];
+    if (elapsed >= a.t && elapsed <= b.t) {
+      const span = b.t - a.t;
+      const frac = span === 0 ? 1 : (elapsed - a.t) / span;
+      return a.r + (b.r - a.r) * frac;
+    }
+  }
+  return ZONE_KEYFRAMES[ZONE_KEYFRAMES.length - 1].r;
+}
+
 // ---------- Геометрия: стены и кусты ----------
 function circleHitsRect(cx, cy, r, rect) {
   const nearestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
@@ -95,6 +121,7 @@ function spawnPoint(index, total) {
 
 function startMatch(room) {
   room.started = true;
+  room.startTime = Date.now();
   let i = 0;
   const total = room.players.size;
   for (const p of room.players.values()) {
@@ -131,8 +158,16 @@ function publicPlayer(p) {
   };
 }
 
+function eliminatePlayer(room, p) {
+  if (!p.alive) return;
+  p.alive = false;
+  io.to(room.id).emit('playerEliminated', { id: p.id, name: p.name });
+}
+
 function tickRoom(room) {
   const dt = TICK_MS / 1000;
+  const elapsed = (Date.now() - room.startTime) / 1000;
+  const zoneRadius = getZoneRadius(elapsed);
 
   for (const p of room.players.values()) {
     if (!p.alive) continue;
@@ -178,6 +213,13 @@ function tickRoom(room) {
     // пассивные эффекты
     if (stats.effect === 'heal_regen') p.hp = Math.min(p.maxHp, p.hp + 15 * dt);
     if (stats.effect === 'shield_regen') p.hp = Math.min(p.maxHp, p.hp + 8 * dt);
+
+    // урон от зоны, если игрок снаружи безопасного круга
+    const distFromCenter = Math.hypot(p.x - ZONE_CENTER.x, p.y - ZONE_CENTER.y);
+    if (distFromCenter > zoneRadius) {
+      p.hp -= ZONE_DPS * dt;
+      if (p.hp <= 0) eliminatePlayer(room, p);
+    }
   }
 
   // снаряды
@@ -199,10 +241,7 @@ function tickRoom(room) {
           p.x += Math.cos(a) * 40;
           p.y += Math.sin(a) * 40;
         }
-        if (p.hp <= 0 && p.alive) {
-          p.alive = false;
-          io.to(room.id).emit('playerEliminated', { id: p.id, name: p.name });
-        }
+        if (p.hp <= 0) eliminatePlayer(room, p);
         if (!pr.pierce) return false; // снаряд гаснет, кроме "pierce"
       }
     }
@@ -211,10 +250,11 @@ function tickRoom(room) {
 
   const allPlayers = [...room.players.values()];
   const projSnapshot = room.projectiles.map(pr => ({ x: pr.x, y: pr.y, effect: pr.effect }));
+  const zoneSnapshot = { x: ZONE_CENTER.x, y: ZONE_CENTER.y, r: zoneRadius };
 
   for (const viewer of allPlayers) {
     const visible = allPlayers.filter(p => isVisibleTo(viewer, p)).map(publicPlayer);
-    io.to(viewer.id).emit('state', { players: visible, projectiles: projSnapshot });
+    io.to(viewer.id).emit('state', { players: visible, projectiles: projSnapshot, zone: zoneSnapshot });
   }
 
   checkMatchEnd(room);
