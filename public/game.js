@@ -21,6 +21,7 @@ let mapSize = 2400;
 let players = [];       // последнее полученное состояние с сервера
 let renderPlayers = [];  // сглаженные позиции для отрисовки (интерполяция)
 let projectiles = [];
+let zone = null;
 let brawlersData = {};
 let mapData = { walls: [], bushes: [] };
 let matchActive = false;
@@ -190,6 +191,7 @@ socket.on('matchStart', (data) => {
 socket.on('state', (data) => {
   players = data.players;
   projectiles = data.projectiles;
+  zone = data.zone;
 });
 
 socket.on('playerEliminated', ({ name }) => setStatus(`${name} выбыл`));
@@ -265,6 +267,7 @@ function draw() {
   ctx.strokeRect(0, 0, mapSize, mapSize);
   ctx.lineWidth = 1;
 
+  drawZone();
   drawObstacles();
 
   // снаряды
@@ -310,6 +313,24 @@ function draw() {
 
   drawSticks();
   requestAnimationFrame(loop);
+}
+
+function drawZone() {
+  if (!zone) return;
+  ctx.save();
+  ctx.fillStyle = 'rgba(140, 0, 0, 0.45)';
+  ctx.beginPath();
+  ctx.rect(0, 0, mapSize, mapSize);
+  ctx.arc(zone.x, zone.y, zone.r, 0, Math.PI * 2, true); // "дыра" под безопасную зону
+  ctx.fill('evenodd');
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#ff5252';
+  ctx.lineWidth = 6;
+  ctx.arc(zone.x, zone.y, zone.r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = 1;
 }
 
 function drawObstacles() {
